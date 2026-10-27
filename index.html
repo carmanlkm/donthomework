@@ -449,8 +449,11 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 填入你在 Google Apps Script 部署獲得的 Web App URL
-        const GOOGLE_SHEETS_SCRIPT_URL = '請替換成你的_APPS_SCRIPT_WEB_APP_URL';
+        // =========================================================================
+        // 🎯 提示：請將下方單引號內的網址替換為你在 Google Apps Script 部署獲得的網址：
+        // =========================================================================
+        const GOOGLE_SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygAbJalJ1pbv3AzFaySmAkHeO7wuSyyXSZ6ZZwEOAjQBMDoWsS8IQRBs6prtU_A1E2Hg/exec';
+        // =========================================================================
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'beyblade-reading-app-2026';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
