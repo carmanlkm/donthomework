@@ -931,8 +931,12 @@
             const record = window.gameState.answeredQuestions[q.id];
             const hintBox = document.getElementById('hintBox');
 
+            // 如果答錯（包括首答或補答錯），顯示作答提示與知識瓶頸說明
             if (record && !record.isCorrect) {
-                document.getElementById('hintContent').innerText = q.hint;
+                document.getElementById('hintContent').innerHTML = `
+                    <div class="mb-1"><span class="font-bold text-amber-300">知識層面：</span>${q.knowledge}</div>
+                    <div><span class="font-bold text-amber-300">思考提示：</span>${q.hint}</div>
+                `;
                 hintBox.classList.remove('hidden');
             } else {
                 hintBox.classList.add('hidden');
@@ -948,8 +952,20 @@
                     else style = 'bg-red-950 border-red-500 text-red-300 font-bold';
                 }
 
+                // 標示首答鎖定選項圖示
+                let firstAttemptTag = '';
+                if (record && record.firstOption === optLetter) {
+                    firstAttemptTag = `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded ${record.firstIsCorrect ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-red-500/30 text-red-300 border border-red-500/50'}" title="首次回答點選">首答 ${optLetter}</span>`;
+                }
+
                 btn.className = `w-full p-4 rounded-2xl border text-left text-sm transition flex items-center justify-between ${style}`;
-                btn.innerHTML = `<span>${opt}</span> ${record && record.selectedOption === optLetter ? (record.isCorrect ? '🟢' : '🔴') : ''}`;
+                btn.innerHTML = `
+                    <div class="flex items-center">
+                        <span>${opt}</span>
+                        ${firstAttemptTag}
+                    </div>
+                    ${record && record.selectedOption === optLetter ? (record.isCorrect ? '🟢' : '🔴') : ''}
+                `;
 
                 btn.onclick = () => handleAnswerSelect(q.id, optLetter);
                 grid.appendChild(btn);
@@ -959,11 +975,21 @@
         function handleAnswerSelect(qId, selectedOption) {
             const q = window.questionsData.find(item => item.id === qId);
             const isCorrect = (selectedOption === q.answer);
+            const existingRecord = window.gameState.answeredQuestions[qId];
+
+            // 首答成績鎖定 (First-Attempt Lock) 核心邏輯：
+            // 如果尚無回答紀錄，則將當前選項與結果鎖定為 firstOption 及 firstIsCorrect；否則保留原有的首答紀錄。
+            const firstOption = existingRecord ? existingRecord.firstOption : selectedOption;
+            const firstIsCorrect = existingRecord ? existingRecord.firstIsCorrect : isCorrect;
 
             window.gameState.answeredQuestions[qId] = {
+                // 當前選項 (可用於補答更新得分與解鎖陀螺)
                 isCorrect: isCorrect,
                 selectedOption: selectedOption,
-                attempts: (window.gameState.answeredQuestions[qId]?.attempts || 0) + 1
+                // 首答鎖定紀錄 (專供教師數據分析與匯出)
+                firstOption: firstOption,
+                firstIsCorrect: firstIsCorrect,
+                attempts: (existingRecord?.attempts || 0) + 1
             };
 
             saveCurrentStudentProgress();
@@ -1406,15 +1432,22 @@
             const allStudents = window.gameState.allStudentsData;
 
             window.questionsData.forEach(q => {
-                const correctStudents = [];
-                const wrongStudents = [];
+                const correctStudentsFirst = [];
+                const wrongStudentsFirst = [];
 
                 allStudents.forEach(st => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
                     const tag = `${st.studentClass || ''}班${st.studentId || ''}號`;
                     if (ans) {
-                        if (ans.isCorrect) correctStudents.push(tag);
-                        else wrongStudents.push(`${tag}(選${ans.selectedOption})`);
+                        // 數據分析一律採用「首答紀錄 (firstOption / firstIsCorrect)」
+                        const firstOpt = ans.firstOption || ans.selectedOption;
+                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
+
+                        if (isFirstCorrect) {
+                            correctStudentsFirst.push(tag);
+                        } else {
+                            wrongStudentsFirst.push(`${tag}(選${firstOpt})`);
+                        }
                     }
                 });
 
@@ -1422,30 +1455,34 @@
                 qCard.className = 'bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2';
 
                 qCard.innerHTML = `
-                    <div class="flex items-start justify-between">
+                    <div class="flex items-start justify-between gap-2">
                         <div>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">知識層面: ${q.knowledge}</span>
                             <h4 class="font-extrabold text-white text-sm mt-1">${q.question}</h4>
+                            <div class="text-xs text-slate-400 mt-1">選項: ${q.options.join(' | ')}</div>
                         </div>
-                        <span class="text-xs font-bold text-amber-400">正確答案: ${q.answer}</span>
+                        <span class="text-xs font-bold text-amber-400 shrink-0">正確答案: ${q.answer}</span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/60">
                         <div class="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-900/50">
                             <span class="font-bold text-emerald-400 flex items-center mb-1">
-                                🟢 答對學生 (${correctStudents.length}人):
+                                🟢 首答正確學生 (${correctStudentsFirst.length}人):
                             </span>
-                            <div class="text-slate-300">
-                                ${correctStudents.length > 0 ? correctStudents.join(', ') : '無'}
+                            <div class="text-slate-300 leading-relaxed">
+                                ${correctStudentsFirst.length > 0 ? correctStudentsFirst.join(', ') : '無'}
                             </div>
                         </div>
 
                         <div class="bg-red-950/40 p-2.5 rounded-xl border border-red-900/50">
                             <span class="font-bold text-red-400 flex items-center mb-1">
-                                🔴 答錯學生 (${wrongStudents.length}人):
+                                🔴 首答錯誤學生 (${wrongStudentsFirst.length}人):
                             </span>
-                            <div class="text-slate-300">
-                                ${wrongStudents.length > 0 ? wrongStudents.join(', ') : '無'}
+                            <div class="text-slate-300 leading-relaxed">
+                                ${wrongStudentsFirst.length > 0 ? wrongStudentsFirst.join(', ') : '無'}
+                            </div>
+                            <div class="mt-2 text-[11px] text-amber-400/90 border-t border-red-900/30 pt-1">
+                                💡 考點原因診斷：${q.hint}
                             </div>
                         </div>
                     </div>
@@ -1478,10 +1515,11 @@
 
             // =========================================================================
             // 【重點位置！】這一段就是發送數據到 Google Sheets 的程式碼：
+            // 分析每題首答記錄、知識層面及答錯原因
             // =========================================================================
-            if (GOOGLE_SHEETS_SCRIPT_URL && GOOGLE_SHEETS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbygAbJalJ1pbv3AzFaySmAkHeO7wuSyyXSZ6ZZwEOAjQBMDoWsS8IQRBs6prtU_A1E2Hg/exec' && window.gameState.studentClass && window.gameState.studentId) {
-                let correctCount = 0;
-                let wrongCount = 0;
+            if (GOOGLE_SHEETS_SCRIPT_URL && GOOGLE_SHEETS_SCRIPT_URL !== '請替換成你的_APPS_SCRIPT_WEB_APP_URL' && window.gameState.studentClass && window.gameState.studentId) {
+                let firstCorrectCount = 0;
+                let firstWrongCount = 0;
                 let questionAnswersList = [];
                 let knowledgeAnalysisList = [];
                 let wrongReasonList = [];
@@ -1489,15 +1527,18 @@
                 window.questionsData.forEach(q => {
                     const ans = window.gameState.answeredQuestions ? window.gameState.answeredQuestions[q.id] : null;
                     if (ans) {
-                        if (ans.isCorrect) {
-                            correctCount++;
-                            questionAnswersList.push(`Q${q.id}:正(選${ans.selectedOption})`);
-                            knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:正`);
+                        const firstOpt = ans.firstOption || ans.selectedOption;
+                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
+
+                        if (isFirstCorrect) {
+                            firstCorrectCount++;
+                            questionAnswersList.push(`Q${q.id}:首答正(選${firstOpt})`);
+                            knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:首答正確`);
                         } else {
-                            wrongCount++;
-                            questionAnswersList.push(`Q${q.id}:錯(選${ans.selectedOption})`);
-                            knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:錯`);
-                            wrongReasonList.push(`Q${q.id}(選${ans.selectedOption}/正${q.answer}): 未能把握「${q.knowledge}」(${q.hint})`);
+                            firstWrongCount++;
+                            questionAnswersList.push(`Q${q.id}:首答錯(選${firstOpt})`);
+                            knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:首答錯誤`);
+                            wrongReasonList.push(`Q${q.id}(首選${firstOpt}/正${q.answer}): 未能掌握「${q.knowledge}」(${q.hint})`);
                         }
                     } else {
                         questionAnswersList.push(`Q${q.id}:未答`);
@@ -1509,11 +1550,11 @@
                     studentClass: window.gameState.studentClass,
                     studentId: window.gameState.studentId,
                     roundWins: window.gameState.currentRoundWins,
-                    correctCount: correctCount,
-                    wrongCount: wrongCount,
+                    correctCount: firstCorrectCount, // Google Sheets 採用首答正確數
+                    wrongCount: firstWrongCount,     // Google Sheets 採用首答錯誤數
                     questionAnswers: questionAnswersList.join(', '),
                     knowledgeAnalysis: knowledgeAnalysisList.join(' | '),
-                    wrongReasonAnalysis: wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '全對/無答錯記錄'
+                    wrongReasonAnalysis: wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '首答全對/無錯題紀錄'
                 };
 
                 fetch(GOOGLE_SHEETS_SCRIPT_URL, {
@@ -1568,67 +1609,95 @@
             const wb = XLSX.utils.book_new();
             const allStudents = window.gameState.allStudentsData;
 
-            // Sheet 1: Student Roster Summary
+            // Sheet 1: Student Roster Summary (數據依據：首答 Lock 成績)
             const studentRows = [
-                ["班別", "學號", "已獲勝局數", "答對題數", "答錯題目紀錄列表"]
+                ["班別", "學號", "已獲勝局數", "首答正確數", "首答錯誤數", "首答對率", "各題首答紀錄", "知識層面及答錯原因診斷"]
             ];
 
             allStudents.forEach(st => {
-                let correctCount = 0;
-                let wrongList = [];
+                let firstCorrectCount = 0;
+                let firstWrongCount = 0;
+                let firstRecordList = [];
+                let wrongReasonList = [];
 
                 window.questionsData.forEach(q => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
                     if (ans) {
-                        if (ans.isCorrect) correctCount++;
-                        else wrongList.push(`Q${q.id}(選${ans.selectedOption})`);
+                        const firstOpt = ans.firstOption || ans.selectedOption;
+                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
+
+                        if (isFirstCorrect) {
+                            firstCorrectCount++;
+                            firstRecordList.push(`Q${q.id}:正(${firstOpt})`);
+                        } else {
+                            firstWrongCount++;
+                            firstRecordList.push(`Q${q.id}:錯(${firstOpt})`);
+                            wrongReasonList.push(`Q${q.id}(選${firstOpt}/正${q.answer}): 未能掌握「${q.knowledge}」(${q.hint})`);
+                        }
+                    } else {
+                        firstRecordList.push(`Q${q.id}:未答`);
                     }
                 });
+
+                const accuracy = (firstCorrectCount + firstWrongCount) > 0 
+                    ? Math.round((firstCorrectCount / (firstCorrectCount + firstWrongCount)) * 100) + '%'
+                    : '0%';
 
                 studentRows.push([
                     st.studentClass || '--',
                     st.studentId || '--',
                     st.roundWins || 0,
-                    `${correctCount} / 12`,
-                    wrongList.length > 0 ? wrongList.join(', ') : '全對 / 無'
+                    firstCorrectCount,
+                    firstWrongCount,
+                    accuracy,
+                    firstRecordList.join(', '),
+                    wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '首答全對 / 無'
                 ]);
             });
 
             const ws1 = XLSX.utils.aoa_to_sheet(studentRows);
-            XLSX.utils.book_append_sheet(wb, ws1, "學生總評與答錯紀錄");
+            XLSX.utils.book_append_sheet(wb, ws1, "學生首答成績與知識分析");
 
-            // Sheet 2: 12 Questions Deep Analysis
+            // Sheet 2: 12 Questions Detailed Analysis (列出全部 12 題完整題目與首答分析)
             const questionRows = [
-                ["題號", "完整題目內容", "正確答案", "知識層面/考點", "答對學生名單 (🟢)", "答錯學生與錯誤選項 (🔴)"]
+                ["題號", "完整題目內容", "選項內容", "正確答案", "知識層面/考點", "首答正確學生名單 (🟢)", "首答錯誤學生與選擇 (🔴)", "答錯原因及學習診斷提示"]
             ];
 
             window.questionsData.forEach(q => {
-                const correctStudents = [];
-                const wrongStudents = [];
+                const correctStudentsFirst = [];
+                const wrongStudentsFirst = [];
 
                 allStudents.forEach(st => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
                     const tag = `${st.studentClass}班${st.studentId}號`;
                     if (ans) {
-                        if (ans.isCorrect) correctStudents.push(tag);
-                        else wrongStudents.push(`${tag}(選${ans.selectedOption})`);
+                        const firstOpt = ans.firstOption || ans.selectedOption;
+                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
+
+                        if (isFirstCorrect) {
+                            correctStudentsFirst.push(tag);
+                        } else {
+                            wrongStudentsFirst.push(`${tag}(選${firstOpt})`);
+                        }
                     }
                 });
 
                 questionRows.push([
                     `第 ${q.id} 題`,
                     q.question,
+                    q.options.join(' | '),
                     q.answer,
                     q.knowledge,
-                    correctStudents.join(', '),
-                    wrongStudents.join(', ')
+                    correctStudentsFirst.join(', '),
+                    wrongStudentsFirst.join(', '),
+                    q.hint
                 ]);
             });
 
             const ws2 = XLSX.utils.aoa_to_sheet(questionRows);
-            XLSX.utils.book_append_sheet(wb, ws2, "12題知識分析明細");
+            XLSX.utils.book_append_sheet(wb, ws2, "12題完整題目與首答分析");
 
-            XLSX.writeFile(wb, `爆旋陀螺_閱讀對戰學生成績分析表.xlsx`);
+            XLSX.writeFile(wb, `爆旋陀螺_閱讀對戰首答成績及知識分析表.xlsx`);
         };
     </script>
 </body>
