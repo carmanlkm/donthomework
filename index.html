@@ -157,6 +157,15 @@
             </div>
 
             <div class="space-y-4 text-xs md:text-sm text-slate-300 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl">
+                    <h3 class="font-bold text-amber-400 mb-1 flex items-center text-xs md:text-sm">
+                        <i class="fas fa-lock mr-2"></i>【首答成績鎖定】說明
+                    </h3>
+                    <p class="text-xs text-amber-200/90 leading-relaxed">
+                        你**第一次點選的答案**將會鎖定為正式評分成績（教師數據將記錄首答）。如果第一次答錯了也不用擔心，你可以繼續「補答」修正答案，補答成功依然可以解鎖更強大的爆旋陀螺！
+                    </p>
+                </div>
+
                 <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
                     <h3 class="font-bold text-yellow-400 mb-2 flex items-center text-sm">
                         <i class="fas fa-trophy mr-2"></i>勝負與得分規則 (先得 4 分獲勝)
@@ -184,7 +193,7 @@
                     <h3 class="font-bold text-emerald-400 mb-1 flex items-center text-sm">
                         <i class="fas fa-crown mr-2"></i>五局大勝利 + 煙花慶祝
                     </h3>
-                    <p class="text-xs text-slate-400">累積勝出 5 局即可觸發全螢幕慶祝煙花！<span class="text-red-400 font-bold">注意：必須答對全部 12 條閱讀題目才能順利勝出第 5 回合！</span></p>
+                    <p class="text-xs text-slate-400">累積勝出 5 局即可觸發全螢幕慶祝煙花！<span class="text-red-400 font-bold">注意：必須完成答對全部 12 條閱讀題目才能順利勝出第 5 回合！</span></p>
                 </div>
             </div>
 
@@ -205,8 +214,12 @@
                         <span id="winCountText" class="text-2xl font-black text-amber-400">0 / 5</span>
                     </div>
                     <div class="text-center bg-slate-950 p-3 rounded-2xl border border-slate-800 min-w-[90px]">
-                        <span class="text-xs text-slate-500 block">已答對題數</span>
+                        <span class="text-xs text-slate-500 block">已解鎖題數</span>
                         <span id="quizScoreText" class="text-2xl font-black text-cyan-400">0 / 12</span>
+                    </div>
+                    <div class="text-center bg-slate-950 p-3 rounded-2xl border border-slate-800 min-w-[90px]">
+                        <span class="text-xs text-slate-500 block">首答正確數</span>
+                        <span id="firstAttemptScoreText" class="text-2xl font-black text-emerald-400">0 / 12</span>
                     </div>
                 </div>
 
@@ -317,8 +330,11 @@
 
             <!-- Question Card -->
             <div id="questionContainer" class="space-y-6">
-                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
-                    <span id="questionCategory" class="text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-400 font-bold mb-3 inline-block">題目 N</span>
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="questionCategory" class="text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-400 font-bold inline-block">題目 N</span>
+                        <span id="firstAttemptTag" class="text-xs font-bold hidden"></span>
+                    </div>
                     <h3 id="questionText" class="text-lg md:text-xl font-bold text-white leading-relaxed">
                         題目加載中...
                     </h3>
@@ -331,7 +347,7 @@
                 <div id="hintBox" class="hidden p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs md:text-sm leading-relaxed flex items-start space-x-3">
                     <i class="fas fa-lightbulb text-amber-400 text-lg mt-0.5"></i>
                     <div>
-                        <div class="font-bold text-amber-400 mb-0.5">作答提示 (思考一下再試次)：</div>
+                        <div class="font-bold text-amber-400 mb-0.5">作答提示 (思考一下再試一次)：</div>
                         <div id="hintContent">提示內容...</div>
                     </div>
                 </div>
@@ -362,9 +378,9 @@
                     <div>
                         <h2 class="text-xl font-black text-amber-400 flex items-center space-x-2">
                             <i class="fas fa-chart-line"></i>
-                            <span>教師數據管理與 12 題知識分析</span>
+                            <span>教師數據管理 (首答鎖定分析 + 12題知識診斷)</span>
                         </h2>
-                        <p class="text-xs text-slate-400 mt-0.5">實時同步全班答題紀錄 (保密模式已解鎖)</p>
+                        <p class="text-xs text-slate-400 mt-0.5">實時同步學生首答成績 (First-Attempt Locked) 與答錯原因分析</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button onclick="exportToExcel()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center space-x-2 transition">
@@ -380,7 +396,7 @@
                 <div>
                     <h3 class="text-sm font-bold text-slate-300 mb-3 flex items-center space-x-2">
                         <i class="fas fa-list-check text-cyan-400"></i>
-                        <span>全部 12 條題目作答狀況與學生選擇分析</span>
+                        <span>全部 12 條題目「首答分析」與錯誤原因診斷</span>
                     </h3>
                     <div id="teacherQuestionsList" class="space-y-4"></div>
                 </div>
@@ -476,7 +492,8 @@
             studentId: '',
             currentRoundWins: 0,
             selectedBeyId: 'chips_dragon',
-            answeredQuestions: {}, // qId: { isCorrect, selectedOption, attempts }
+            // answeredQuestions: qId -> { isCorrect, selectedOption, attempts, firstSelectedOption, firstIsCorrect }
+            answeredQuestions: {}, 
             allStudentsData: []
         };
 
@@ -488,7 +505,8 @@
                 options: ["A. 幼稚園", "B. 一年級", "C. 二年級", "D. 三年級"],
                 answer: "B",
                 hint: "請回想故事開頭，洋洋告別幼稚園，踏入小學成為了幾年級的小生呢？",
-                knowledge: "故事細節擷取 (事實理解)"
+                knowledge: "故事細節擷取 (事實理解)",
+                wrongReasonText: "未能準確識別文中時間與年級背景設定。"
             },
             {
                 id: 2,
@@ -496,7 +514,8 @@
                 options: ["A. 很害怕", "B. 很無聊", "C. 很生氣", "D. 很開心，歡迎新挑戰"],
                 answer: "D",
                 hint: "洋洋剛開學時抱著滿滿的期待與笑容，準備迎接新環境哦！",
-                knowledge: "人物情感理解"
+                knowledge: "人物情感理解",
+                wrongReasonText: "忽略角色初期積極的心態變化。"
             },
             {
                 id: 3,
@@ -504,7 +523,8 @@
                 options: ["A. 一隻作業怪獸", "B. 一個玩具", "C. 一本故事書", "D. 一枝新鉛筆"],
                 answer: "A",
                 hint: "當功課越來越多時，書包裡好像藏著一隻巨大又讓人煩惱的「小怪獸」呢！",
-                knowledge: "故事象徵與情節理解"
+                knowledge: "故事象徵與情節理解",
+                wrongReasonText: "將隱喻式的「作業怪獸」與具體物件混淆。"
             },
             {
                 id: 4,
@@ -512,7 +532,8 @@
                 options: ["A. 更喜歡跟媽媽聊天", "B. 更喜歡做功課", "C. 每天都開開心心", "D. 不想跟媽媽說話，也不想跟爸爸去公園玩"],
                 answer: "D",
                 hint: "怪獸讓他心情非常低落，連平時最喜歡的家人互動和公園遊玩都不想去了。",
-                knowledge: "因果關係分析"
+                knowledge: "因果關係分析",
+                wrongReasonText: "未理解情緒低落對日常社交與親子互動的影響。"
             },
             {
                 id: 5,
@@ -520,7 +541,8 @@
                 options: ["A. 笑咪咪", "B. 變得嚴肅", "C. 不來上課", "D. 跟洋洋一起玩"],
                 answer: "B",
                 hint: "老師為了督促大家打敗怪獸、認真學習，表情和態度變得比較認真和嚴格了。",
-                knowledge: "角色形象理解"
+                knowledge: "角色形象理解",
+                wrongReasonText: "誤解老師嚴肅態度的教育初衷。"
             },
             {
                 id: 6,
@@ -528,7 +550,8 @@
                 options: ["A. 同學", "B. 爸爸", "C. 媽媽", "D. 老師"],
                 answer: "C",
                 hint: "在家裡細心陪伴洋洋，用有趣的方法解開他心結的人是誰呢？",
-                knowledge: "主要人物檢索"
+                knowledge: "主要人物檢索",
+                wrongReasonText: "未掌握提供核心陪伴與方法的關鍵人物。"
             },
             {
                 id: 7,
@@ -536,7 +559,8 @@
                 options: ["A. 罵他寫功課", "B. 用他喜歡的事物（例如打棒球的姿勢）來幫助他", "C. 替他寫完所有功課", "D. 不讓他去學校"],
                 answer: "B",
                 hint: "媽媽觀察到洋洋最喜歡某種體育運動，並把寫作業比喻成那個運動的動作！",
-                knowledge: "解決問題策略分析"
+                knowledge: "解決問題策略分析",
+                wrongReasonText: "忽略化解學習焦慮的教育方法（興趣結合）。"
             },
             {
                 id: 8,
@@ -544,7 +568,8 @@
                 options: ["A. 正面迎接挑戰", "B. 逃跑", "C. 哭不停", "D. 不理它"],
                 answer: "A",
                 hint: "遇到怪獸或挑戰時，逃避不能解決問題，我們要拿出勇氣積極去面對！",
-                knowledge: "主題思考與主旨推論"
+                knowledge: "主題思考與主旨推論",
+                wrongReasonText: "未能轉化故事為積極的人生態度。"
             },
             {
                 id: 9,
@@ -552,7 +577,8 @@
                 options: ["A. 仍然很害怕", "B. 更討厭功課", "C. 不再害怕，功課不再是怪獸", "D. 不想上學了"],
                 answer: "C",
                 hint: "找到方法後，洋洋發現作業變得像好朋友一樣，不再恐怖了！",
-                knowledge: "心境轉變推論"
+                knowledge: "心境轉變推論",
+                wrongReasonText: "忽略角色克服困難後的心理成長。"
             },
             {
                 id: 10,
@@ -560,7 +586,8 @@
                 options: ["A. 功課很可怕", "B. 老師很兇", "C. 不要寫功課", "D. 要用正面態度克服困難，家人會陪伴我們"],
                 answer: "D",
                 hint: "故事傳達了愛與堅持的力量，遇到學習難題時家人的愛會支持我們戰勝困難。",
-                knowledge: "文章中心思想歸納"
+                knowledge: "文章中心思想歸納",
+                wrongReasonText: "未能統合主題與家庭支持之關聯。"
             },
             {
                 id: 11,
@@ -568,7 +595,8 @@
                 options: ["A. 立刻放棄，不寫了", "B. 哭著找媽媽代寫", "C. 先試一試，不懂就問老師或家人，再繼續努力", "D. 把功課丟掉"],
                 answer: "C",
                 hint: "有堅毅精神的孩子會先動腦嘗試，遇到瓶頸懂得禮貌尋求協助！",
-                knowledge: "生活情境應用與品德建構"
+                knowledge: "生活情境應用與品德建構",
+                wrongReasonText: "缺乏面對困境時的求助與嘗試策略。"
             },
             {
                 id: 12,
@@ -576,7 +604,8 @@
                 options: ["A. 說「我永遠都不會」然後不學了", "B. 再試一次，慢慢練習，不輕易放棄", "C. 生氣地把單車踢走", "D. 只看別人做，自己不試"],
                 answer: "B",
                 hint: "跌倒只是成功的過程，站起來再試一次才是真正的勇者！",
-                knowledge: "堅毅品格與自我反思"
+                knowledge: "堅毅品格與自我反思",
+                wrongReasonText: "對「堅毅不屈」品格概念缺乏明確定義與實踐理解。"
             }
         ];
 
@@ -780,7 +809,8 @@
             startGameHub();
         };
 
-        function getCorrectCount() {
+        // 解鎖用的正確題數 (包含補答正確)
+        function getUnlockedCount() {
             let count = 0;
             for (let id in window.gameState.answeredQuestions) {
                 if (window.gameState.answeredQuestions[id].isCorrect) count++;
@@ -788,9 +818,21 @@
             return count;
         }
 
+        // 鎖定首答正確題數 (僅計算第一次回答)
+        function getFirstAttemptCorrectCount() {
+            let count = 0;
+            for (let id in window.gameState.answeredQuestions) {
+                if (window.gameState.answeredQuestions[id].firstIsCorrect) count++;
+            }
+            return count;
+        }
+
         function updateHubStats() {
-            const correctCount = getCorrectCount();
-            document.getElementById('quizScoreText').innerText = `${correctCount} / 12`;
+            const unlockedCount = getUnlockedCount();
+            const firstAttemptCount = getFirstAttemptCorrectCount();
+
+            document.getElementById('quizScoreText').innerText = `${unlockedCount} / 12`;
+            document.getElementById('firstAttemptScoreText').innerText = `${firstAttemptCount} / 12`;
             document.getElementById('winCountText').innerText = `${window.gameState.currentRoundWins} / 5`;
 
             const selectedBey = window.beyblades.find(b => b.id === window.gameState.selectedBeyId);
@@ -819,10 +861,10 @@
             if (!grid) return;
             grid.innerHTML = '';
 
-            const correctCount = getCorrectCount();
+            const unlockedCount = getUnlockedCount();
 
             window.beyblades.forEach(b => {
-                const isUnlocked = correctCount >= b.requiredScore;
+                const isUnlocked = unlockedCount >= b.requiredScore;
                 const isSelected = window.gameState.selectedBeyId === b.id;
 
                 const card = document.createElement('div');
@@ -838,7 +880,7 @@
                         renderBeybladesGrid();
                         updateHubStats();
                     } else {
-                        alert(`此陀螺尚未解鎖！需要答對 ${b.requiredScore} 題閱讀題即可解鎖（目前已答對 ${correctCount} 題）。`);
+                        alert(`此陀螺尚未解鎖！需要答對/補答對 ${b.requiredScore} 題閱讀題即可解鎖（目前已解鎖 ${unlockedCount} 題）。`);
                     }
                 };
 
@@ -899,14 +941,20 @@
 
                 let statusStyle = 'bg-slate-800 text-slate-400 border-slate-700';
                 if (record) {
-                    if (record.isCorrect) statusStyle = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
-                    else statusStyle = 'bg-red-500/20 text-red-400 border-red-500/50';
+                    if (record.firstIsCorrect) {
+                        statusStyle = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
+                    } else if (record.isCorrect) {
+                        // 首答錯但補答對 (藍色/紫色解鎖標示)
+                        statusStyle = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50';
+                    } else {
+                        statusStyle = 'bg-red-500/20 text-red-400 border-red-500/50';
+                    }
                 }
                 if (idx === currentQuestionIndex) {
-                    statusStyle += ' ring-2 ring-cyan-400';
+                    statusStyle += ' ring-2 ring-cyan-400 font-extrabold';
                 }
 
-                pill.className = `w-9 h-9 rounded-xl border font-bold text-xs flex items-center justify-center transition ${statusStyle}`;
+                pill.className = `w-9 h-9 rounded-xl border text-xs flex items-center justify-center transition ${statusStyle}`;
                 pill.innerText = idx + 1;
                 pill.onclick = () => {
                     currentQuestionIndex = idx;
@@ -925,18 +973,29 @@
             document.getElementById('questionCategory').innerText = `題目 ${q.id} / 12 ・ ${q.knowledge}`;
             document.getElementById('questionText').innerText = q.question;
 
+            const firstAttemptTag = document.getElementById('firstAttemptTag');
+            const record = window.gameState.answeredQuestions[q.id];
+
+            if (record && record.firstSelectedOption) {
+                firstAttemptTag.classList.remove('hidden');
+                if (record.firstIsCorrect) {
+                    firstAttemptTag.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                    firstAttemptTag.innerText = `🔒 首答評分: 正確 (${record.firstSelectedOption})`;
+                } else {
+                    firstAttemptTag.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40';
+                    firstAttemptTag.innerText = `🔒 首答評分: 錯誤 (${record.firstSelectedOption}) ${record.isCorrect ? '・已補答解鎖' : ''}`;
+                }
+            } else {
+                firstAttemptTag.classList.add('hidden');
+            }
+
             const grid = document.getElementById('optionsGrid');
             grid.innerHTML = '';
 
-            const record = window.gameState.answeredQuestions[q.id];
             const hintBox = document.getElementById('hintBox');
 
-            // 如果答錯（包括首答或補答錯），顯示作答提示與知識瓶頸說明
             if (record && !record.isCorrect) {
-                document.getElementById('hintContent').innerHTML = `
-                    <div class="mb-1"><span class="font-bold text-amber-300">知識層面：</span>${q.knowledge}</div>
-                    <div><span class="font-bold text-amber-300">思考提示：</span>${q.hint}</div>
-                `;
+                document.getElementById('hintContent').innerText = q.hint;
                 hintBox.classList.remove('hidden');
             } else {
                 hintBox.classList.add('hidden');
@@ -947,25 +1006,20 @@
                 const btn = document.createElement('button');
 
                 let style = 'bg-slate-950 border-slate-800 hover:border-cyan-500 text-slate-200';
-                if (record && record.selectedOption === optLetter) {
-                    if (record.isCorrect) style = 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold';
-                    else style = 'bg-red-950 border-red-500 text-red-300 font-bold';
-                }
+                let tagStr = '';
 
-                // 標示首答鎖定選項圖示
-                let firstAttemptTag = '';
-                if (record && record.firstOption === optLetter) {
-                    firstAttemptTag = `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded ${record.firstIsCorrect ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-red-500/30 text-red-300 border border-red-500/50'}" title="首次回答點選">首答 ${optLetter}</span>`;
+                if (record) {
+                    if (record.selectedOption === optLetter) {
+                        if (record.isCorrect) style = 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold';
+                        else style = 'bg-red-950 border-red-500 text-red-300 font-bold';
+                    }
+                    if (record.firstSelectedOption === optLetter) {
+                        tagStr = record.firstIsCorrect ? ' 🟢 [首答]' : ' 🔴 [首答]';
+                    }
                 }
 
                 btn.className = `w-full p-4 rounded-2xl border text-left text-sm transition flex items-center justify-between ${style}`;
-                btn.innerHTML = `
-                    <div class="flex items-center">
-                        <span>${opt}</span>
-                        ${firstAttemptTag}
-                    </div>
-                    ${record && record.selectedOption === optLetter ? (record.isCorrect ? '🟢' : '🔴') : ''}
-                `;
+                btn.innerHTML = `<span>${opt}</span><span class="text-xs font-bold">${tagStr}</span>`;
 
                 btn.onclick = () => handleAnswerSelect(q.id, optLetter);
                 grid.appendChild(btn);
@@ -977,19 +1031,15 @@
             const isCorrect = (selectedOption === q.answer);
             const existingRecord = window.gameState.answeredQuestions[qId];
 
-            // 首答成績鎖定 (First-Attempt Lock) 核心邏輯：
-            // 如果尚無回答紀錄，則將當前選項與結果鎖定為 firstOption 及 firstIsCorrect；否則保留原有的首答紀錄。
-            const firstOption = existingRecord ? existingRecord.firstOption : selectedOption;
-            const firstIsCorrect = existingRecord ? existingRecord.firstIsCorrect : isCorrect;
+            let firstSelectedOption = existingRecord ? existingRecord.firstSelectedOption : selectedOption;
+            let firstIsCorrect = existingRecord ? existingRecord.firstIsCorrect : isCorrect;
 
             window.gameState.answeredQuestions[qId] = {
-                // 當前選項 (可用於補答更新得分與解鎖陀螺)
-                isCorrect: isCorrect,
-                selectedOption: selectedOption,
-                // 首答鎖定紀錄 (專供教師數據分析與匯出)
-                firstOption: firstOption,
-                firstIsCorrect: firstIsCorrect,
-                attempts: (existingRecord?.attempts || 0) + 1
+                isCorrect: isCorrect, // 當前是否回答正確 (供解鎖陀螺用)
+                selectedOption: selectedOption, // 最近一次點選的選項
+                attempts: (existingRecord?.attempts || 0) + 1,
+                firstSelectedOption: firstSelectedOption, // 🔒 首答選項 (鎖定)
+                firstIsCorrect: firstIsCorrect // 🔒 首答是否正確 (鎖定，用於教師端與評分)
             };
 
             saveCurrentStudentProgress();
@@ -1011,9 +1061,9 @@
             }
 
             if (window.gameState.currentRoundWins >= 4) {
-                const totalCorrect = getCorrectCount();
-                if (totalCorrect < 12) {
-                    alert(`【勝出第五回合解鎖條件】\n你需要回答正確全部 12 題故事閱讀題目才能挑戰並勝出最後第 5 回合！\n目前已答對：${totalCorrect} / 12 題。請先點擊「回答閱讀題」完成答題！`);
+                const totalUnlocked = getUnlockedCount();
+                if (totalUnlocked < 12) {
+                    alert(`【勝出第五回合解鎖條件】\n你需要完成答對全部 12 條故事閱讀題目才可挑戰並勝出最後第 5 回合！\n目前已解鎖：${totalUnlocked} / 12 題。請點擊「回答閱讀題」完成答題！`);
                     openQuizScreen();
                     return;
                 }
@@ -1432,57 +1482,55 @@
             const allStudents = window.gameState.allStudentsData;
 
             window.questionsData.forEach(q => {
-                const correctStudentsFirst = [];
-                const wrongStudentsFirst = [];
+                const correctStudents = [];
+                const wrongStudents = [];
 
                 allStudents.forEach(st => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
                     const tag = `${st.studentClass || ''}班${st.studentId || ''}號`;
-                    if (ans) {
-                        // 數據分析一律採用「首答紀錄 (firstOption / firstIsCorrect)」
-                        const firstOpt = ans.firstOption || ans.selectedOption;
-                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
-
-                        if (isFirstCorrect) {
-                            correctStudentsFirst.push(tag);
+                    if (ans && ans.firstSelectedOption) {
+                        // 🔒 嚴格依據首答成績進行統計
+                        if (ans.firstIsCorrect) {
+                            correctStudents.push(`${tag}(選${ans.firstSelectedOption})`);
                         } else {
-                            wrongStudentsFirst.push(`${tag}(選${firstOpt})`);
+                            wrongStudents.push(`${tag}(選${ans.firstSelectedOption})`);
                         }
                     }
                 });
 
                 const qCard = document.createElement('div');
-                qCard.className = 'bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2';
+                qCard.className = 'bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3';
 
                 qCard.innerHTML = `
-                    <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-start justify-between flex-wrap gap-2">
                         <div>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">知識層面: ${q.knowledge}</span>
-                            <h4 class="font-extrabold text-white text-sm mt-1">${q.question}</h4>
-                            <div class="text-xs text-slate-400 mt-1">選項: ${q.options.join(' | ')}</div>
+                            <h4 class="font-extrabold text-white text-sm mt-1.5">${q.question}</h4>
                         </div>
-                        <span class="text-xs font-bold text-amber-400 shrink-0">正確答案: ${q.answer}</span>
+                        <span class="text-xs font-bold text-amber-400">正確答案: ${q.answer}</span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/60">
+                    <!-- 考點與錯誤原因提示 -->
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                        <span class="font-bold text-amber-300">💡 答錯原因診斷：</span> ${q.wrongReasonText}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1">
                         <div class="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-900/50">
                             <span class="font-bold text-emerald-400 flex items-center mb-1">
-                                🟢 首答正確學生 (${correctStudentsFirst.length}人):
+                                🟢 首答對學生 (${correctStudents.length}人):
                             </span>
-                            <div class="text-slate-300 leading-relaxed">
-                                ${correctStudentsFirst.length > 0 ? correctStudentsFirst.join(', ') : '無'}
+                            <div class="text-slate-300">
+                                ${correctStudents.length > 0 ? correctStudents.join(', ') : '無'}
                             </div>
                         </div>
 
                         <div class="bg-red-950/40 p-2.5 rounded-xl border border-red-900/50">
                             <span class="font-bold text-red-400 flex items-center mb-1">
-                                🔴 首答錯誤學生 (${wrongStudentsFirst.length}人):
+                                🔴 首答錯學生 (${wrongStudents.length}人):
                             </span>
-                            <div class="text-slate-300 leading-relaxed">
-                                ${wrongStudentsFirst.length > 0 ? wrongStudentsFirst.join(', ') : '無'}
-                            </div>
-                            <div class="mt-2 text-[11px] text-amber-400/90 border-t border-red-900/30 pt-1">
-                                💡 考點原因診斷：${q.hint}
+                            <div class="text-slate-300">
+                                ${wrongStudents.length > 0 ? wrongStudents.join(', ') : '無'}
                             </div>
                         </div>
                     </div>
@@ -1493,7 +1541,6 @@
         }
 
         function saveCurrentStudentProgress() {
-            // Always keep local in-memory copy synced
             const docId = `${window.gameState.studentClass}_${window.gameState.studentId}`;
             const currentStudentData = {
                 studentClass: window.gameState.studentClass,
@@ -1503,7 +1550,7 @@
                 updatedAt: new Date().toISOString()
             };
 
-            // Update in local state list
+            // 更新本地內存
             const existingIdx = window.gameState.allStudentsData.findIndex(
                 st => st.studentClass === window.gameState.studentClass && st.studentId === window.gameState.studentId
             );
@@ -1514,8 +1561,7 @@
             }
 
             // =========================================================================
-            // 【重點位置！】這一段就是發送數據到 Google Sheets 的程式碼：
-            // 分析每題首答記錄、知識層面及答錯原因
+            // 【數據存檔 & Google Sheets 匯出推送】 (鎖定首答成績 First-Attempt Lock)
             // =========================================================================
             if (GOOGLE_SHEETS_SCRIPT_URL && GOOGLE_SHEETS_SCRIPT_URL !== '請替換成你的_APPS_SCRIPT_WEB_APP_URL' && window.gameState.studentClass && window.gameState.studentId) {
                 let firstCorrectCount = 0;
@@ -1526,19 +1572,17 @@
 
                 window.questionsData.forEach(q => {
                     const ans = window.gameState.answeredQuestions ? window.gameState.answeredQuestions[q.id] : null;
-                    if (ans) {
-                        const firstOpt = ans.firstOption || ans.selectedOption;
-                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
-
-                        if (isFirstCorrect) {
+                    if (ans && ans.firstSelectedOption) {
+                        // 🔒 僅依據「首答成績」紀錄
+                        if (ans.firstIsCorrect) {
                             firstCorrectCount++;
-                            questionAnswersList.push(`Q${q.id}:首答正(選${firstOpt})`);
+                            questionAnswersList.push(`Q${q.id}:正(首選${ans.firstSelectedOption})`);
                             knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:首答正確`);
                         } else {
                             firstWrongCount++;
-                            questionAnswersList.push(`Q${q.id}:首答錯(選${firstOpt})`);
+                            questionAnswersList.push(`Q${q.id}:錯(首選${ans.firstSelectedOption})`);
                             knowledgeAnalysisList.push(`Q${q.id}[${q.knowledge}]:首答錯誤`);
-                            wrongReasonList.push(`Q${q.id}(首選${firstOpt}/正${q.answer}): 未能掌握「${q.knowledge}」(${q.hint})`);
+                            wrongReasonList.push(`Q${q.id}(首選${ans.firstSelectedOption}/正${q.answer})【考點:${q.knowledge}】: ${q.wrongReasonText}`);
                         }
                     } else {
                         questionAnswersList.push(`Q${q.id}:未答`);
@@ -1550,21 +1594,20 @@
                     studentClass: window.gameState.studentClass,
                     studentId: window.gameState.studentId,
                     roundWins: window.gameState.currentRoundWins,
-                    correctCount: firstCorrectCount, // Google Sheets 採用首答正確數
-                    wrongCount: firstWrongCount,     // Google Sheets 採用首答錯誤數
+                    firstCorrectCount: firstCorrectCount, // 首答正確數
+                    firstWrongCount: firstWrongCount,     // 首答錯誤數
                     questionAnswers: questionAnswersList.join(', '),
                     knowledgeAnalysis: knowledgeAnalysisList.join(' | '),
-                    wrongReasonAnalysis: wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '首答全對/無錯題紀錄'
+                    wrongReasonAnalysis: wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '首答全對/無首答錯誤記錄'
                 };
 
                 fetch(GOOGLE_SHEETS_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // 避免跨網域阻擋
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }).catch(err => console.warn('Google Sheets 同步失敗:', err));
             }
-            // =========================================================================
 
             if (!db || !window.gameState.studentClass || !window.gameState.studentId) return;
 
@@ -1609,95 +1652,74 @@
             const wb = XLSX.utils.book_new();
             const allStudents = window.gameState.allStudentsData;
 
-            // Sheet 1: Student Roster Summary (數據依據：首答 Lock 成績)
+            // Sheet 1: 學生首答成績與答錯原因總評
             const studentRows = [
-                ["班別", "學號", "已獲勝局數", "首答正確數", "首答錯誤數", "首答對率", "各題首答紀錄", "知識層面及答錯原因診斷"]
+                ["玩家班別", "玩家學號", "已獲勝局數", "首答正確數 (鎖定)", "首答錯誤數", "首答錯誤題目與原因診斷分析"]
             ];
 
             allStudents.forEach(st => {
                 let firstCorrectCount = 0;
                 let firstWrongCount = 0;
-                let firstRecordList = [];
                 let wrongReasonList = [];
 
                 window.questionsData.forEach(q => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
-                    if (ans) {
-                        const firstOpt = ans.firstOption || ans.selectedOption;
-                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
-
-                        if (isFirstCorrect) {
+                    if (ans && ans.firstSelectedOption) {
+                        if (ans.firstIsCorrect) {
                             firstCorrectCount++;
-                            firstRecordList.push(`Q${q.id}:正(${firstOpt})`);
                         } else {
                             firstWrongCount++;
-                            firstRecordList.push(`Q${q.id}:錯(${firstOpt})`);
-                            wrongReasonList.push(`Q${q.id}(選${firstOpt}/正${q.answer}): 未能掌握「${q.knowledge}」(${q.hint})`);
+                            wrongReasonList.push(`Q${q.id}(首選${ans.firstSelectedOption}/正${q.answer})[${q.knowledge}]: ${q.wrongReasonText}`);
                         }
-                    } else {
-                        firstRecordList.push(`Q${q.id}:未答`);
                     }
                 });
-
-                const accuracy = (firstCorrectCount + firstWrongCount) > 0 
-                    ? Math.round((firstCorrectCount / (firstCorrectCount + firstWrongCount)) * 100) + '%'
-                    : '0%';
 
                 studentRows.push([
                     st.studentClass || '--',
                     st.studentId || '--',
                     st.roundWins || 0,
-                    firstCorrectCount,
+                    `${firstCorrectCount} / 12`,
                     firstWrongCount,
-                    accuracy,
-                    firstRecordList.join(', '),
-                    wrongReasonList.length > 0 ? wrongReasonList.join(';\n ') : '首答全對 / 無'
+                    wrongReasonList.length > 0 ? wrongReasonList.join(';\n') : '首答全對 / 無錯誤記錄'
                 ]);
             });
 
             const ws1 = XLSX.utils.aoa_to_sheet(studentRows);
-            XLSX.utils.book_append_sheet(wb, ws1, "學生首答成績與知識分析");
+            XLSX.utils.book_append_sheet(wb, ws1, "學生首答總評與答錯分析");
 
-            // Sheet 2: 12 Questions Detailed Analysis (列出全部 12 題完整題目與首答分析)
+            // Sheet 2: 12 題知識層面與首答數據診斷
             const questionRows = [
-                ["題號", "完整題目內容", "選項內容", "正確答案", "知識層面/考點", "首答正確學生名單 (🟢)", "首答錯誤學生與選擇 (🔴)", "答錯原因及學習診斷提示"]
+                ["題號", "完整題目內容", "正確答案", "知識層面/考點分析", "答錯原因診斷提示", "首答正確學生名單 (🟢)", "首答錯誤學生與首選答案 (🔴)"]
             ];
 
             window.questionsData.forEach(q => {
-                const correctStudentsFirst = [];
-                const wrongStudentsFirst = [];
+                const correctStudents = [];
+                const wrongStudents = [];
 
                 allStudents.forEach(st => {
                     const ans = st.answeredQuestions ? st.answeredQuestions[q.id] : null;
                     const tag = `${st.studentClass}班${st.studentId}號`;
-                    if (ans) {
-                        const firstOpt = ans.firstOption || ans.selectedOption;
-                        const isFirstCorrect = ans.firstIsCorrect !== undefined ? ans.firstIsCorrect : ans.isCorrect;
-
-                        if (isFirstCorrect) {
-                            correctStudentsFirst.push(tag);
-                        } else {
-                            wrongStudentsFirst.push(`${tag}(選${firstOpt})`);
-                        }
+                    if (ans && ans.firstSelectedOption) {
+                        if (ans.firstIsCorrect) correctStudents.push(`${tag}(選${ans.firstSelectedOption})`);
+                        else wrongStudents.push(`${tag}(選${ans.firstSelectedOption})`);
                     }
                 });
 
                 questionRows.push([
                     `第 ${q.id} 題`,
                     q.question,
-                    q.options.join(' | '),
                     q.answer,
                     q.knowledge,
-                    correctStudentsFirst.join(', '),
-                    wrongStudentsFirst.join(', '),
-                    q.hint
+                    q.wrongReasonText,
+                    correctStudents.join(', '),
+                    wrongStudents.join(', ')
                 ]);
             });
 
             const ws2 = XLSX.utils.aoa_to_sheet(questionRows);
-            XLSX.utils.book_append_sheet(wb, ws2, "12題完整題目與首答分析");
+            XLSX.utils.book_append_sheet(wb, ws2, "12題知識層面診斷明細");
 
-            XLSX.writeFile(wb, `爆旋陀螺_閱讀對戰首答成績及知識分析表.xlsx`);
+            XLSX.writeFile(wb, `爆旋陀螺_閱讀對戰首答成績與知識分析表.xlsx`);
         };
     </script>
 </body>
